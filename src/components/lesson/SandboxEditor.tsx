@@ -409,21 +409,25 @@ export default function SandboxEditor({ exercises = [] }: SandboxEditorProps) {
     setValidationMessage("");
     setValidationPassed(null);
 
+    const result = await runValidationInHiddenIframe(currentExercise);
+    setValidationPassed(result.passed);
+    setValidationMessage(result.message);
+    setIsChecking(false);
+
     fetch("/api/attempts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         exerciseId: currentExercise.id,
-        code: { html: code.html, css: code.css, js: code.js },
+        htmlSnapshot: code.html,
+        cssSnapshot: code.css,
+        jsSnapshot: code.js,
+        result: result.passed ? "PASS" : "FAIL",
+        feedback: result.message,
       }),
     }).catch(() => {
       // Intentionally non-blocking: server logging should not interrupt learner flow.
     });
-
-    const result = await runValidationInHiddenIframe(currentExercise);
-    setValidationPassed(result.passed);
-    setValidationMessage(result.message);
-    setIsChecking(false);
   };
 
   const canGoNext = Boolean(hasExercises && validationPassed && exerciseIndex < exercises.length - 1);

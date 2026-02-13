@@ -13,7 +13,10 @@ export async function gradeQuiz(lessonId: string, answers: Record<string, string
 
   const results = questions.map((question) => {
     const response = answers[question.id] ?? "";
-    const correct = response.trim() === question.correctAnswer.trim();
+    const isExactMatch = question.type === "MULTIPLE_CHOICE";
+    const correct = isExactMatch
+      ? response.trim() === question.correctAnswer.trim()
+      : response.trim().toLowerCase() === question.correctAnswer.trim().toLowerCase();
     if (correct) {
       score += 1;
     }
